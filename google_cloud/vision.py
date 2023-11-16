@@ -22,6 +22,8 @@ async def get_vision_annotated(file):
     img = Image.open(io.BytesIO(bytes(file)))
     draw = ImageDraw.Draw(img)
     
+    color = ["red", "green", "blue", "pink", "white", "purple"]
+    color_count = 0
     for object_ in response:
         ul_vt = object_.bounding_poly.normalized_vertices[0]
         dr_vt = object_.bounding_poly.normalized_vertices[2]
@@ -30,7 +32,11 @@ async def get_vision_annotated(file):
         ul_vt = (ul_vt.x*img.width, ul_vt.y*img.height)
         dr_vt = (dr_vt.x*img.width, dr_vt.y*img.height)
         
-        draw.rectangle([ul_vt, dr_vt], outline="red")
-        draw.text(text_vt, object_.name, fill="red", font=font)
+        draw.rectangle([ul_vt, dr_vt], outline=color[color_count])
+        draw.text(text_vt, object_.name, fill=color[color_count], font=font)
+        
+        color_count += 1
+        if color == len(color):
+            color_count = 0
     
     img.save("generated/vision.png", "PNG")
