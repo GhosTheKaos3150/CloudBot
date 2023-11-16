@@ -7,7 +7,7 @@ from google.oauth2 import service_account
 from PIL import Image, ImageDraw, ImageFont
 
 async def get_vision_annotated(file):
-    credentials = service_account.Credentials.from_service_account_file("cloudbot-405122-70829b67fa85.json")
+    credentials = service_account.Credentials.from_service_account_file(environ["CLOUD_JSON"])
     
     client = vision.ImageAnnotatorClient(credentials=credentials)
     image = vision.Image()
