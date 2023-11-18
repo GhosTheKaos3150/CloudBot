@@ -72,11 +72,16 @@ async def speach_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file = await update.message.voice.get_file()
     file_bytes = await file.download_as_bytearray()
     
-    stt.get_stt_transcription(bytes(file_bytes))
+    transcript = stt.get_stt_transcription(bytes(file_bytes))
     
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=f"Aqui está a transcrição da mensagem:"
+        text="Aqui está a transcrição da mensagem:"
+        )
+    
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=transcript.capitalize()+"."
         )
     
     return ConversationHandler.END

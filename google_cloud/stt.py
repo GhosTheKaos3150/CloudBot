@@ -11,17 +11,19 @@ def get_stt_transcription(file: bytes):
     credentials = service_account.Credentials.from_service_account_file(environ["CLOUD_JSON"])
     
     client = speech_v1.SpeechClient(credentials=credentials)
-    audio = speech_v1.RecognitionAudio(content=base64.b64encode(file))
+    audio = speech_v1.RecognitionAudio(content=file)
     
     config = speech_v1.RecognitionConfig(
-        encoding=speech_v1.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code="en-US")
+        encoding=speech_v1.RecognitionConfig.AudioEncoding.OGG_OPUS,
+        sample_rate_hertz=48000,
+        language_code="pt-BR")
     
-    response = client.recognize(config=config, audio=audio)
+    request = speech_v1.RecognizeRequest(
+        config=config,
+        audio=audio,
+    )
     
-    print(response)
-    
-    for result in response.results:
-        print(f"Transcript: {result.alternatives[0].transcript}")
+    response = client.recognize(request=request).results[0]
+        
+    return response.alternatives[0].transcript
     
