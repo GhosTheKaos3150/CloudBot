@@ -8,7 +8,7 @@ def transcribe_file(job_name, file_uri, transcribe_client):
     transcribe_client.start_transcription_job(
         TranscriptionJobName=job_name,
         Media={"MediaFileUri": file_uri},
-        MediaFormat='wav',
+        MediaFormat='mp4',
         LanguageCode="pt-BR",
     )
 
@@ -30,10 +30,10 @@ def transcribe_file(job_name, file_uri, transcribe_client):
             print(f"Waiting for {job_name}. Current status is {job_status}.")
         time.sleep(10)
 
-def translate(transcribed_text):
-    boto3.client(service_name='translate', region_name='us-east-2', use_ssl=True)
-    text_to_translate = transcribed_text
-    result = translate.translate_text(Text=text_to_translate, 
+def Ftranslate(transcribed_text):
+    translate =boto3.client(service_name='translate', region_name='us-east-2', use_ssl=True)
+    #text_to_translate = transcribed_text
+    result = translate.translate_text(Text=transcribed_text, 
                 SourceLanguageCode="pt", TargetLanguageCode="en")
     print('TranslatedText: ' + result.get('TranslatedText'))
     print('SourceLanguageCode: ' + result.get('SourceLanguageCode'))
@@ -41,14 +41,16 @@ def translate(transcribed_text):
 
 def main():
     transcribe_client = boto3.client("transcribe")
-    file_uri = "s3://test-transcribe/answer2.wav"
+    file_uri = "https://trabalho-nabor-ia.s3.us-east-2.amazonaws.com/video_2023-12-07_13-55-12.mp4"
     job_name = f"Example-job-{time.time_ns()}"
     transcription_job =  transcribe_file(job_name, file_uri, transcribe_client)
     transcript_simple = requests.get(
-        transcription_job["Transcript"]["TranscriptFileUri"]
+        transcription_job['TranscriptionJob']["Transcript"]["TranscriptFileUri"]
     ).json()
     print(f"Transcript for job {transcript_simple['jobName']}:")
     print(transcript_simple["results"]["transcripts"][0]["transcript"])
+    transcription_to_translate = transcript_simple["results"]["transcripts"][0]["transcript"]
+    Ftranslate(transcription_to_translate)
     #Prosegue com a tradução
 
 
