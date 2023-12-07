@@ -1,6 +1,8 @@
 import time
 import boto3
 import requests
+# CODIGO DE EXEMPLO PARA PEGAR O TRANSCRITO DE UM S3 #
+# https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/python/example_code/transcribe/transcribe_basics.py#L336
 
 def transcribe_file(job_name, file_uri, transcribe_client):
     transcribe_client.start_transcription_job(
