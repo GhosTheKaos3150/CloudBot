@@ -1,7 +1,5 @@
 from os import environ
 
-from google_cloud import vision, stt
-
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, ConversationHandler, filters
 
