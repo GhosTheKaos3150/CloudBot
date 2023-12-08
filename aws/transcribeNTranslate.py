@@ -1,6 +1,8 @@
 import time
 import boto3
 import requests
+import urllib
+
 # CODIGO DE EXEMPLO PARA PEGAR O TRANSCRITO DE UM S3 #
 # https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/python/example_code/transcribe/transcribe_basics.py#L336
 
@@ -10,6 +12,10 @@ def transcribe_file(job_name, file_uri, transcribe_client):
         Media={"MediaFileUri": file_uri},
         MediaFormat='mp4',
         LanguageCode="pt-BR",
+	Subtitles = {
+        'Formats': ['srt'],
+        'OutputStartIndex': 1
+   }
     )
 
     max_tries = 60
@@ -22,7 +28,9 @@ def transcribe_file(job_name, file_uri, transcribe_client):
             if job_status == "COMPLETED":
                 print(
                     f"Download the transcript from\n"
-                    f"\t{job['TranscriptionJob']['Transcript']['TranscriptFileUri']}."
+                    f"\t{job['TranscriptionJob']['Transcript']['TranscriptFileUri']}.\n\n"
+                    f"Download the subtitles from\n"
+                    f"\t {job['TranscriptionJob']['Subtitles']['SubtitleFileUris']}"
                 )
                 return job
             break
@@ -30,7 +38,7 @@ def transcribe_file(job_name, file_uri, transcribe_client):
             print(f"Waiting for {job_name}. Current status is {job_status}.")
         time.sleep(10)
 
-def Ftranslate(transcribed_text):
+def get_translate(transcribed_text):
     translate =boto3.client(service_name='translate', region_name='us-east-2', use_ssl=True)
     #text_to_translate = transcribed_text
     result = translate.translate_text(Text=transcribed_text, 
@@ -38,6 +46,7 @@ def Ftranslate(transcribed_text):
     print('TranslatedText: ' + result.get('TranslatedText'))
     print('SourceLanguageCode: ' + result.get('SourceLanguageCode'))
     print('TargetLanguageCode: ' + result.get('TargetLanguageCode'))
+    return result.get('TranslatedText')
 
 def main():
     transcribe_client = boto3.client("transcribe")
@@ -47,10 +56,20 @@ def main():
     transcript_simple = requests.get(
         transcription_job['TranscriptionJob']["Transcript"]["TranscriptFileUri"]
     ).json()
+
+    for uri in transcription_job['TranscriptionJob']['Subtitles']['SubtitleFileUris']:
+        response = urllib.request.urlopen(uri)
+        content = response.read().decode('utf-8')
+        print(f"\n\nresponse.read: {content}\n\n")
     print(f"Transcript for job {transcript_simple['jobName']}:")
+    #transcription_items = transcript_simple['results']['items']
+
     print(transcript_simple["results"]["transcripts"][0]["transcript"])
-    transcription_to_translate = transcript_simple["results"]["transcripts"][0]["transcript"]
-    Ftranslate(transcription_to_translate)
+    #transcription_to_translate = transcript_simple["results"]["transcripts"][0]["transcript"]
+    #translated_text = get_translate(transcription_to_translate)
+    translatated_sub = get_translate(content)
+    with open(f"sub_{job_name}.srt", 'w') as arq:
+        arq.write(translatated_sub)
     #Prosegue com a tradução
 
 
